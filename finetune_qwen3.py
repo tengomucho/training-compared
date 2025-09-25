@@ -21,6 +21,7 @@ from datasets import load_dataset
 from peft import LoraConfig
 from transformers import AutoTokenizer, HfArgumentParser, TrainingArguments, AutoModelForCausalLM
 from trl import SFTConfig, SFTTrainer
+from accelerate import Accelerator
 
 # Check CUDA availability at startup
 if not torch.cuda.is_available():
@@ -66,9 +67,15 @@ def preprocess_dataset_with_eos(eos_token):
 # Model Loading and Training Loop Function
 # =============================================================================
 def train(model_id, tokenizer, dataset, training_args):
-    # Force CUDA usage only
-    device = "cuda"
-    print("Using CUDA GPU (CUDA-only mode)")
+    # Initialize Accelerator with ZeRO optimization
+    accelerator = Accelerator(
+        gradient_accumulation_steps=training_args.gradient_accumulation_steps,
+        mixed_precision="bf16" if training_args.bf16 else "no",
+        log_with=None,  # Disable logging integrations for simplicity
+    )
+    
+    print(f"Using Accelerator with {accelerator.num_processes} processes")
+    print(f"Device: {accelerator.device}")
     
     # Set dtype based on training arguments
     dtype = torch.bfloat16 if training_args.bf16 else torch.float32
@@ -77,7 +84,7 @@ def train(model_id, tokenizer, dataset, training_args):
     model = AutoModelForCausalLM.from_pretrained(
         model_id,
         torch_dtype=dtype,
-        device_map=device,
+        device_map=None,  # Let Accelerator handle device placement
         # Use FlashAttention2 for better performance on CUDA
         attn_implementation="flash_attention_2",
         trust_remote_code=True,  # Required for Qwen models
@@ -93,7 +100,7 @@ def train(model_id, tokenizer, dataset, training_args):
         task_type="CAUSAL_LM",
     )
 
-    # SFT configuration for TRL
+    # SFT configuration for TRL with Accelerator support
     sft_config = SFTConfig(
         max_length=4096,
         packing=True,

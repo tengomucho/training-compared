@@ -1,0 +1,37 @@
+# Fine-Tuning Comparison Across Accelerator
+
+This is a simple test to compare the fine-tuning time when working with two differenc hardware acelerators, Trainium and Nvidia GPU.
+
+## Neuron
+
+On Neuron, tests have been done on a Trainium trn1.32xlarge instance, that has 16 chips with a total of 512 GB of accelerator memory. On this setup, the script used is a copy of a [Optimum Neuron example](https://github.com/huggingface/optimum-neuron/blob/v0.3.0-release/examples/training/qwen3/finetune_qwen3.py).
+
+When running with the time parameter after HF cache has been deleted, results are these:
+
+```
+{'train_runtime': 5216.4665, 'train_samples_per_second': 0.456, 'train_steps_per_second': 0.057, 'train_loss': 1.4759539682857115, 'epoch': 2.97}
+100%|███████████████████████████████████████████████████████████████████████████████████████████| 297/297 [1:26:57<00:00, 17.57s/it]
+[2025-09-24 10:38:23.874: I neuronx_distributed/trainer/checkpoint.py:240] async saving of checkpoint adapter_shards completed
+[2025-09-24 10:38:23.878: I neuronx_distributed/trainer/checkpoint.py:256] no checkpoints to remove.
+
+real    91m41.436s
+user    543m1.755s
+sys     78m18.630s
+```
+
+## CUDA
+
+For GPU, the configuration chosen to run it is a g5.13xlarge from AWS, that has 4X Nvidia A10G/P8 chips with 24GB of GPU RAM each.
+
+On this setup, the example coming from Neuron has been adapted. Accelerate was used to launch the training and deepspeed's ZeRO configuration used to reduce memory usage.
+
+When running with the time parameter after HF cache has been deleted, results are these:
+
+```
+{'train_runtime': 439.7435, 'train_samples_per_second': 0.364, 'train_steps_per_second': 0.011, 'train_loss': 2.600844931602478, 'entropy': 2.185546875, 'num_tokens': 651501.0, 'mean_token_accuracy': 0.5601786449551582, 'epoch': 0.2}
+100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 5/5 [07:19<00:00, 87.95s/it]
+
+real    8m34.805s
+user    31m9.460s
+sys     2m17.511s
+```

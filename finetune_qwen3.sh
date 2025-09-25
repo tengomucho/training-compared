@@ -12,10 +12,20 @@ SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 # For testing purposes, limit steps
 MAX_STEPS=${2:-5}  # Remove this line for full training
 
+# Distributed training configuration
+NUM_PROCESSES=4  # Number of GPU processes to spawn
+MASTER_PORT=29500  # Port for process communication (change if port is in use)
+
 echo "MODEL_NAME: $MODEL_NAME"
 echo "MAX_STEPS: $MAX_STEPS"
+echo "NUM_PROCESSES: $NUM_PROCESSES"
+echo "Starting distributed training with accelerate launch and ZeRO-1 optimization..."
 
-python finetune_qwen3.py \
+# Launch distributed training with accelerate launch using ZeRO-1 config
+# --config_file: Use the accelerate config file for ZeRO-1 optimization
+accelerate launch \
+  --config_file accelerate_config.yaml \
+  finetune_qwen3.py \
   --model_id $MODEL_NAME \
   --num_train_epochs $NUM_EPOCHS \
   --do_train \
@@ -27,11 +37,4 @@ python finetune_qwen3.py \
   --logging_steps $LOGGING_STEPS \
   --output_dir $OUTPUT_DIR \
   --lr_scheduler_type "cosine" \
-  --overwrite_output_dir \
-  --save_strategy "steps" \
-  --save_steps 50 \
-  --eval_strategy "no" \
-  --warmup_steps 10 \
-  --weight_decay 0.01 \
-  --max_grad_norm 1.0 \
-  --dataloader_num_workers 0
+  --overwrite_output_dir
