@@ -5,12 +5,12 @@ NUM_EPOCHS=3
 BS=1
 GRADIENT_ACCUMULATION_STEPS=8
 LOGGING_STEPS=2
-MODEL_NAME=${$1:-"Qwen/Qwen3-8B"}
+MODEL_NAME=${1:-"Qwen/Qwen3-8B"}
 OUTPUT_DIR="$(echo $MODEL_NAME | cut -d'/' -f2)-finetuned"
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 # For testing purposes, limit steps
-MAX_STEPS=${$2:-5}  # Remove this line for full training
+MAX_STEPS=${2:-5}  # Remove this line for full training
 
 echo "MODEL_NAME: $MODEL_NAME"
 echo "MAX_STEPS: $MAX_STEPS"
@@ -23,6 +23,7 @@ python finetune_qwen3.py \
   --per_device_train_batch_size $BS \
   --gradient_accumulation_steps $GRADIENT_ACCUMULATION_STEPS \
   --learning_rate 8e-4 \
+  --bf16 \
   --logging_steps $LOGGING_STEPS \
   --output_dir $OUTPUT_DIR \
   --lr_scheduler_type "cosine" \

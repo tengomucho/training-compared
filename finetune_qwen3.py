@@ -92,7 +92,7 @@ def train(model_id, tokenizer, dataset, training_args):
 
     # SFT configuration for TRL
     sft_config = SFTConfig(
-        max_seq_length=4096,
+        max_length=4096,
         packing=True,
         # Convert TrainingArguments to dict and pass relevant args
         per_device_train_batch_size=training_args.per_device_train_batch_size,
