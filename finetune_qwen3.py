@@ -14,12 +14,22 @@
 # limitations under the License.
 
 from dataclasses import dataclass, field
+import sys
 
 import torch
 from datasets import load_dataset
 from peft import LoraConfig
 from transformers import AutoTokenizer, HfArgumentParser, TrainingArguments, AutoModelForCausalLM
 from trl import SFTConfig, SFTTrainer
+
+# Check CUDA availability at startup
+if not torch.cuda.is_available():
+    print("ERROR: CUDA is not available on this system.")
+    print("This script requires CUDA to run. Please ensure you have:")
+    print("1. A CUDA-compatible GPU")
+    print("2. CUDA drivers installed")
+    print("3. PyTorch with CUDA support installed")
+    sys.exit(1)
 
 
 # =============================================================================
@@ -56,27 +66,20 @@ def preprocess_dataset_with_eos(eos_token):
 # Model Loading and Training Loop Function
 # =============================================================================
 def train(model_id, tokenizer, dataset, training_args):
-    # Check if MPS is available
-    if torch.backends.mps.is_available():
-        device = "mps"
-        print("Using MPS (Apple Silicon GPU)")
-    elif torch.cuda.is_available():
-        device = "cuda"
-        print("Using CUDA GPU")
-    else:
-        device = "cpu"
-        print("Using CPU")
+    # Force CUDA usage only
+    device = "cuda"
+    print("Using CUDA GPU (CUDA-only mode)")
     
     # Set dtype based on training arguments
     dtype = torch.bfloat16 if training_args.bf16 else torch.float32
     
-    # Load model with MPS/CUDA/CPU compatibility
+    # Load model with CUDA-only compatibility
     model = AutoModelForCausalLM.from_pretrained(
         model_id,
         torch_dtype=dtype,
-        device_map=device if device != "cpu" else None,
-        # Use FlashAttention2 for better performance (if supported on device)
-        attn_implementation="flash_attention_2" if device == "gpu" else "eager",
+        device_map=device,
+        # Use FlashAttention2 for better performance on CUDA
+        attn_implementation="flash_attention_2",
         trust_remote_code=True,  # Required for Qwen models
     )
 
