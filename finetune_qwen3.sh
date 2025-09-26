@@ -10,7 +10,7 @@ OUTPUT_DIR="$(echo $MODEL_NAME | cut -d'/' -f2)-finetuned"
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 # For testing purposes, limit steps
-MAX_STEPS=${2:-5}  # Remove this line for full training
+MAX_STEPS=${2:--1}
 
 # Distributed training configuration
 NUM_PROCESSES=4  # Number of GPU processes to spawn
@@ -19,7 +19,7 @@ MASTER_PORT=29500  # Port for process communication (change if port is in use)
 echo "MODEL_NAME: $MODEL_NAME"
 echo "MAX_STEPS: $MAX_STEPS"
 echo "NUM_PROCESSES: $NUM_PROCESSES"
-echo "Starting distributed training with accelerate launch and ZeRO-1 optimization..."
+echo "Starting distributed training with accelerate launch and ZeRO optimization..."
 
 # Launch distributed training with accelerate launch using ZeRO-1 config
 # --config_file: Use the accelerate config file for ZeRO-1 optimization
