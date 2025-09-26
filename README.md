@@ -28,10 +28,10 @@ On this setup, the example coming from Neuron has been adapted. Accelerate was u
 When running with the time parameter after HF cache has been deleted, results are these:
 
 ```
-{'train_runtime': 439.7435, 'train_samples_per_second': 0.364, 'train_steps_per_second': 0.011, 'train_loss': 2.600844931602478, 'entropy': 2.185546875, 'num_tokens': 651501.0, 'mean_token_accuracy': 0.5601786449551582, 'epoch': 0.2}
-100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 5/5 [07:19<00:00, 87.95s/it]
+{'train_runtime': 6135.7261, 'train_samples_per_second': 0.391, 'train_steps_per_second': 0.012, 'train_loss': 1.5560000006357828, 'entropy': 1.3681640625, 'num_tokens': 9603960.0, 'mean_token_accuracy': 0.6519232243299484, 'epoch': 3.0}
+100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 75/75 [1:42:15<00:00, 81.81s/it]
 
-real    8m34.805s
-user    31m9.460s
-sys     2m17.511s
+real    103m31.346s
+user    411m44.019s
+sys     2m41.581s
 ```
